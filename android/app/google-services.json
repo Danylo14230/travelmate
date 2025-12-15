@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "455918915116",
+    "project_id": "travel-organizer-proj",
+    "storage_bucket": "travel-organizer-proj.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455918915116:android:345dc3e936ec71dc970b89",
+        "android_client_info": {
+          "package_name": "com.example.travel_organizer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "455918915116-4pbe62gqg567nnju24cvpruindvqmqu3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.travel_organizer",
+            "certificate_hash": "d648e3136a8a4113ce6ae5e7cad3af1075f46afa"
+          }
+        },
+        {
+          "client_id": "455918915116-p97jva64bh3bn94s4bs3q2gjclokpaad.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABNrxmRGlg9D7SIsoVcebJDTD_CNaUb_s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "455918915116-2up1nji75r0646e2m4tbrqisblghlb0u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "455918915116-39p95ctf0kju525e20gf8pni55ope1ee.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.travelOrganizer"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
