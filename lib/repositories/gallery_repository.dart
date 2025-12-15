@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -13,9 +11,6 @@ class GalleryRepository {
   final _supabase = Supabase.instance.client;
   final _picker = ImagePicker();
 
-  /// =============================
-  /// ДОДАТИ ФОТО
-  /// =============================
   Future<void> addPhoto(String tripId) async {
     final picked = await _picker.pickImage(
       source: ImageSource.gallery,
@@ -24,16 +19,8 @@ class GalleryRepository {
 
     if (picked == null) return;
 
-    Uint8List bytes;
-
-    if (kIsWeb) {
-      // 🌐 WEB
-      bytes = Uint8List.fromList(await picked.readAsBytes());
-    } else {
-      // 📱 MOBILE / DESKTOP
-      final file = File(picked.path);
-      bytes = Uint8List.fromList(await file.readAsBytes());
-    }
+    // ✅ ЄДИНИЙ КОРЕКТНИЙ ВАРІАНТ ДЛЯ WEB + MOBILE
+    final Uint8List bytes = await picked.readAsBytes();
 
     final ext = picked.name.split('.').last;
     final fileName = '${DateTime.now().millisecondsSinceEpoch}.$ext';
@@ -61,9 +48,6 @@ class GalleryRepository {
     });
   }
 
-  /// =============================
-  /// ГАЛЕРЕЯ ПОДОРОЖІ
-  /// =============================
   Stream<List<GalleryImage>> photosStream(String tripId) {
     return _firestore
         .collection('trip-gallery')
@@ -78,22 +62,14 @@ class GalleryRepository {
     });
   }
 
-  /// =============================
-  /// ВСЯ ГАЛЕРЕЯ
-  /// =============================
   Stream<List<GalleryImage>> allGallery() {
     return _firestore
         .collection('trip-gallery')
         .snapshots()
-        .map(
-          (snap) =>
-          snap.docs.map(GalleryImage.fromFirestore).toList(),
-    );
+        .map((snap) =>
+        snap.docs.map(GalleryImage.fromFirestore).toList());
   }
 
-  /// =============================
-  /// ВИДАЛЕННЯ
-  /// =============================
   Future<void> deletePhoto(GalleryImage img) async {
     await _firestore
         .collection('trip-gallery')
