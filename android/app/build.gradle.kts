@@ -1,35 +1,17 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-
-    // Flutter
     id("dev.flutter.flutter-gradle-plugin")
 
-    // Firebase
+    // Firebase (МОЖЕ БУТИ, це не помилка)
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
 
 android {
-
     namespace = "com.example.travel_organizer"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
-
-    // ✅ FLAVORS
-    flavorDimensions += "environment"
-
-    productFlavors {
-        create("dev") {
-            dimension = "environment"
-            applicationIdSuffix = ".dev"
-            versionNameSuffix = "-dev"
-        }
-
-        create("prod") {
-            dimension = "environment"
-        }
-    }
 
     defaultConfig {
         applicationId = "com.example.travel_organizer"
@@ -39,6 +21,26 @@ android {
         versionName = flutter.versionName
     }
 
+    // ✅ ОЦЕ ПРАВИЛЬНО ДЛЯ KTS
+    flavorDimensions += "environment"
+
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+        }
+        create("prod") {
+            dimension = "environment"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -46,13 +48,6 @@ android {
 
     kotlinOptions {
         jvmTarget = "11"
-    }
-
-    buildTypes {
-        release {
-            // ⚠️ для CI нормально
-            signingConfig = signingConfigs.getByName("debug")
-        }
     }
 }
 
