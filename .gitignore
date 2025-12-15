@@ -40,7 +40,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
-
+.run/
 # Symbolication related
 app.*.symbols
 
