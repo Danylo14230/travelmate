@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -20,15 +24,31 @@ class GalleryRepository {
 
     if (picked == null) return;
 
-    final bytes = await picked.readAsBytes();
-    final ext = picked.path.split('.').last;
-    final fileName = '${DateTime.now().millisecondsSinceEpoch}.$ext';
+    Uint8List bytes;
 
+    if (kIsWeb) {
+      // 🌐 WEB
+      bytes = Uint8List.fromList(await picked.readAsBytes());
+    } else {
+      // 📱 MOBILE / DESKTOP
+      final file = File(picked.path);
+      bytes = Uint8List.fromList(await file.readAsBytes());
+    }
+
+    final ext = picked.name.split('.').last;
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}.$ext';
     final storagePath = 'trips/$tripId/$fileName';
 
     await _supabase.storage
         .from('trip-gallery')
-        .uploadBinary(storagePath, bytes);
+        .uploadBinary(
+      storagePath,
+      bytes,
+      fileOptions: const FileOptions(
+        contentType: 'image/jpeg',
+        upsert: false,
+      ),
+    );
 
     final url = _supabase.storage
         .from('trip-gallery')
@@ -37,7 +57,7 @@ class GalleryRepository {
     await _firestore.collection('trip-gallery').add({
       'tripId': tripId,
       'url': url,
-      'createdAt': FieldValue.serverTimestamp(), // ← це ОК
+      'createdAt': FieldValue.serverTimestamp(),
     });
   }
 
@@ -52,16 +72,11 @@ class GalleryRepository {
         .map((snap) {
       final list = snap.docs
           .map(GalleryImage.fromFirestore)
-          .toList();
-
-      list.sort(
-            (a, b) => b.createdAt.compareTo(a.createdAt),
-      );
-
+          .toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
     });
   }
-
 
   /// =============================
   /// ВСЯ ГАЛЕРЕЯ

@@ -17,20 +17,24 @@ class TripTasksScreen extends StatefulWidget {
 
 class _TripTasksScreenState extends State<TripTasksScreen> {
   bool _loaded = false;
+  late final String tripId;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_loaded) return;
 
-    final tripId = ModalRoute.of(context)!.settings.arguments as String;
-    context.read<TasksProvider>().listenForTrip(tripId);
+    tripId = ModalRoute.of(context)!.settings.arguments as String;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TasksProvider>().listenForTrip(tripId);
+    });
+
     _loaded = true;
   }
 
   @override
   Widget build(BuildContext context) {
-    final tripId = ModalRoute.of(context)!.settings.arguments as String;
     final tasks = context.watch<TasksProvider>().tasksForTrip(tripId);
 
     return Scaffold(
@@ -62,10 +66,6 @@ class _TripTasksScreenState extends State<TripTasksScreen> {
     );
   }
 
-  // =========================
-  // ADD / EDIT DIALOG
-  // =========================
-
   void _showTaskDialog(BuildContext context, String tripId, {Task? task}) {
     final titleCtl = TextEditingController(text: task?.title ?? '');
     DateTime dueDate = task?.dueDate ?? DateTime.now();
@@ -93,18 +93,15 @@ class _TripTasksScreenState extends State<TripTasksScreen> {
 
                     final picked = await showDatePicker(
                       context: ctx,
-                      initialDate: dueDate.isBefore(trip.startDate)
-                          ? dueDate
-                          : trip.startDate,
-                      firstDate: DateTime.now(),        // 🔥 від сьогодні
-                      lastDate: trip.startDate,         // 🔥 ДО початку подорожі
+                      initialDate: dueDate.isBefore(trip.startDate) ? dueDate : trip.startDate,
+                      firstDate: DateTime.now(),
+                      lastDate: trip.startDate,
                     );
                     if (picked != null) {
                       setState(() => dueDate = picked);
                     }
                   },
                 ),
-
               ],
             ),
             actions: [
@@ -143,10 +140,6 @@ class _TripTasksScreenState extends State<TripTasksScreen> {
     );
   }
 
-  // =========================
-  // TASK TILE
-  // =========================
-
   Widget _taskTile(
       BuildContext context, {
         required String tripId,
@@ -169,11 +162,8 @@ class _TripTasksScreenState extends State<TripTasksScreen> {
           task.title,
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            decoration:
-            task.completed ? TextDecoration.lineThrough : null,
-            color: task.completed
-                ? AppTheme.textMuted
-                : AppTheme.textPrimary,
+            decoration: task.completed ? TextDecoration.lineThrough : null,
+            color: task.completed ? AppTheme.textMuted : AppTheme.textPrimary,
           ),
         ),
         subtitle: Text(
@@ -184,15 +174,12 @@ class _TripTasksScreenState extends State<TripTasksScreen> {
           children: [
             IconButton(
               icon: const Icon(Icons.edit_outlined),
-              onPressed: () =>
-                  _showTaskDialog(context, tripId, task: task),
+              onPressed: () => _showTaskDialog(context, tripId, task: task),
             ),
             IconButton(
               icon: const Icon(Icons.delete_outline),
               onPressed: () {
-                context
-                    .read<TasksProvider>()
-                    .removeTask(tripId, task.id);
+                context.read<TasksProvider>().removeTask(tripId, task.id);
               },
             ),
           ],

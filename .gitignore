@@ -21,6 +21,8 @@ migrate_working_dir/
 **/client_secret_*.json
 **/*.env
 .env*
+.env
+.env.*
 # Archives
 *.rar
 *.zip

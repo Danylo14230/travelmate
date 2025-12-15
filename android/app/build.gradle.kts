@@ -10,6 +10,18 @@ plugins {
 }
 
 android {
+flavorDimensions "environment"
+
+productFlavors {
+    dev {
+        dimension "environment"
+        applicationIdSuffix ".dev"
+        versionNameSuffix "-dev"
+    }
+    prod {
+        dimension "environment"
+    }
+
     namespace = "com.example.travel_organizer"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion

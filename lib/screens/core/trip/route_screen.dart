@@ -25,15 +25,15 @@ class _RouteScreenState extends State<RouteScreen> {
     if (_loaded) return;
 
     tripId = ModalRoute.of(context)!.settings.arguments as String;
-    context.read<RouteProvider>().loadForTrip(tripId);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RouteProvider>().loadForTrip(tripId);
+    });
+
     _loaded = true;
   }
 
   Trip _trip() => context.read<TripProvider>().getById(tripId)!;
-
-  // ============================================================
-  // ADD / EDIT DIALOG
-  // ============================================================
 
   void _showRouteDialog({RouteEvent? event}) {
     final isEdit = event != null;
@@ -62,16 +62,14 @@ class _RouteScreenState extends State<RouteScreen> {
                 decoration: const InputDecoration(labelText: 'Локація'),
               ),
               const SizedBox(height: 12),
-
-              // ===== DATE =====
               DatePickerField(
                 date: date,
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: ctx,
                     initialDate: date ?? trip.startDate,
-                    firstDate: trip.startDate, // ✅ від початку подорожі
-                    lastDate: trip.endDate,   // ✅ до кінця подорожі
+                    firstDate: trip.startDate,
+                    lastDate: trip.endDate,
                   );
                   if (picked != null) {
                     setState(() => date = picked);
@@ -94,13 +92,9 @@ class _RouteScreenState extends State<RouteScreen> {
                 }
 
                 final trip = _trip();
-
-                if (date!.isBefore(trip.startDate) ||
-                    date!.isAfter(trip.endDate)) {
+                if (date!.isBefore(trip.startDate) || date!.isAfter(trip.endDate)) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Дата події поза межами подорожі'),
-                    ),
+                    const SnackBar(content: Text('Дата події поза межами подорожі')),
                   );
                   return;
                 }
@@ -128,20 +122,15 @@ class _RouteScreenState extends State<RouteScreen> {
                   );
                 }
 
-                Navigator.pop(ctx); // ✅ ОЦЕ КРИТИЧНО
+                Navigator.pop(ctx);
               },
               child: const Text('Зберегти'),
             ),
-
           ],
         ),
       ),
     );
   }
-
-  // ============================================================
-  // BUILD
-  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -172,13 +161,11 @@ class _RouteScreenState extends State<RouteScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.edit),
-                    onPressed: () =>
-                        _showRouteDialog(event: e),
+                    onPressed: () => _showRouteDialog(event: e),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () =>
-                        provider.deleteEvent(tripId, e.id),
+                    onPressed: () => provider.deleteEvent(tripId, e.id),
                   ),
                 ],
               ),

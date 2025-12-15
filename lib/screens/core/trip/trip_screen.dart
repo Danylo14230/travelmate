@@ -24,21 +24,29 @@ class TripScreen extends StatefulWidget {
 
 class _TripScreenState extends State<TripScreen> {
   bool _loaded = false;
+  late final String tripId;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_loaded) return;
 
-    final tripId = ModalRoute.of(context)!.settings.arguments as String;
-    context.read<RouteProvider>().loadForTrip(tripId);
+    tripId = ModalRoute.of(context)!.settings.arguments as String;
+
+    // ✅ ВАЖЛИВО: переносимо завантаження на "після кадру"
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RouteProvider>().loadForTrip(tripId);
+
+      // Якщо захочеш — можна так само підвантажити інші (не обов'язково):
+      // context.read<ExpensesProvider>().loadForTrip(tripId);
+      // context.read<TasksProvider>().listenForTrip(tripId);
+    });
 
     _loaded = true;
   }
 
   @override
   Widget build(BuildContext context) {
-    final tripId = ModalRoute.of(context)!.settings.arguments as String;
     final trip = context.watch<TripProvider>().getById(tripId);
 
     if (trip == null) {
@@ -73,7 +81,6 @@ class _TripScreenState extends State<TripScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 🔹 HEADER TITLE
                 const Text(
                   'Період подорожі',
                   style: TextStyle(
@@ -82,10 +89,7 @@ class _TripScreenState extends State<TripScreen> {
                     color: AppTheme.textMuted,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
-                // 🔹 DATES
                 Row(
                   children: [
                     const Icon(
@@ -106,7 +110,6 @@ class _TripScreenState extends State<TripScreen> {
               ],
             ),
           ),
-
 
           const SizedBox(height: 24),
 
@@ -154,8 +157,7 @@ class _TripScreenState extends State<TripScreen> {
             context,
             icon: Icons.map_outlined,
             title: 'Маршрут',
-            subtitle:
-            hasRoute ? 'Маршрут сплановано' : 'Маршрут не задано',
+            subtitle: hasRoute ? 'Маршрут сплановано' : 'Маршрут не задано',
             onTap: () {
               Navigator.of(context).pushNamed(
                 RouteScreen.routeName,
@@ -185,10 +187,6 @@ class _TripScreenState extends State<TripScreen> {
       ),
     );
   }
-
-  // =========================
-  // UI HELPERS
-  // =========================
 
   Widget _item(
       BuildContext context, {

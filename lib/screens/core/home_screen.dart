@@ -21,24 +21,39 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   TripStatus? _filter;
+  bool _expensesLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    /// 🔥 ВАЖЛИВО: ініціалізація після першого рендера
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final tripProv = context.read<TripProvider>();
+      final expensesProv = context.read<ExpensesProvider>();
+
+      for (final trip in tripProv.trips) {
+        expensesProv.loadForTrip(trip.id);
+      }
+
+      _expensesLoaded = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-
     final tripProv = context.watch<TripProvider>();
     final expensesProv = context.watch<ExpensesProvider>();
 
     final trips = tripProv.trips;
-    final visible = _filter == null
+
+    final visibleTrips = _filter == null
         ? trips
         : trips
         .where((t) =>
     getTripStatus(t.startDate, t.endDate) == _filter)
         .toList();
-// 🔥 ГАРАНТОВАНО ПІДПИСУЄМОСЬ НА ВИТРАТИ
-    for (final t in trips) {
-      expensesProv.loadForTrip(t.id);
-    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Мої подорожі'),
@@ -71,9 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 prefixIcon: Icon(Icons.search),
               ),
             ),
-
             const SizedBox(height: 12),
-
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -85,20 +98,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 12),
-
             Expanded(
-              child: visible.isEmpty
+              child: visibleTrips.isEmpty
                   ? const Center(child: Text('Немає подорожей'))
                   : ListView.separated(
-                itemCount: visible.length,
+                itemCount: visibleTrips.length,
                 separatorBuilder: (_, __) =>
                 const SizedBox(height: 12),
                 itemBuilder: (_, i) {
-                  final trip = visible[i];
+                  final trip = visibleTrips[i];
                   final spent =
                   expensesProv.totalForTrip(trip.id);
+
                   return _card(context, trip, spent);
                 },
               ),
@@ -171,8 +183,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   PopupMenuButton<String>(
                     itemBuilder: (_) => const [
-                      PopupMenuItem(value: 'edit', child: Text('Редагувати')),
-                      PopupMenuItem(value: 'delete', child: Text('Видалити')),
+                      PopupMenuItem(
+                          value: 'edit', child: Text('Редагувати')),
+                      PopupMenuItem(
+                          value: 'delete', child: Text('Видалити')),
                     ],
                     onSelected: (v) {
                       if (v == 'edit') {
@@ -189,9 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   )
                 ],
               ),
-
               const SizedBox(height: 4),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -204,17 +216,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   _status(status),
                 ],
               ),
-
               const SizedBox(height: 10),
-
               Text(
                 '${trip.currency}${spent.toStringAsFixed(0)} / ${trip.currency}${trip.budget.toStringAsFixed(0)}',
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                style:
+                const TextStyle(fontWeight: FontWeight.w600),
               ),
-
               const SizedBox(height: 6),
               _progress(percent, AppTheme.primary),
-
               const SizedBox(height: 10),
               _progress(percent, AppTheme.border),
             ],
@@ -244,7 +253,8 @@ class _HomeScreenState extends State<HomeScreen> {
     };
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding:
+      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: data.$2.withOpacity(0.12),
         borderRadius: BorderRadius.circular(20),
