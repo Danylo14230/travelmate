@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.Delete
+import java.io.File
+
 buildscript {
     repositories {
         google()
@@ -14,4 +17,23 @@ allprojects {
         google()
         mavenCentral()
     }
+}
+
+/**
+ * ✅ ВАЖЛИВО ДЛЯ FLUTTER:
+ * переносимо build output в кореневий ./build
+ * інакше flutter build інколи не знаходить apk (особливо з flavors) і падає.
+ */
+rootProject.buildDir = File(rootDir, "../build")
+
+subprojects {
+    buildDir = File(rootProject.buildDir, name)
+}
+
+subprojects {
+    evaluationDependsOn(":app")
+}
+
+tasks.register<Delete>("clean") {
+    delete(rootProject.buildDir)
 }
