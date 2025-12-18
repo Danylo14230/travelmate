@@ -3,7 +3,7 @@ import 'package:travel_organizer/main.dart'; // назва пакета з pubsp
 
 void main() {
   testWidgets('TravelMateApp builds', (WidgetTester tester) async {
-    await tester.pumpWidget(const TravelMateApp());
+    await tester.pumpWidget(const TravelOrganizer());
     await tester.pump(); // перший кадр
   });
 }
